@@ -1,0 +1,27 @@
+# textdomain: teleportation
+
+
+### init.lua ###
+
+Can not edit, this is not your teleporter=
+Configuration invalid=
+
+Each teleporter needs an ID. To establish a link between two teleporters A and B set the target ID of teleporter A to the ID of teleporter B and vice versa.=
+
+ID or target must not be empty=
+Link two teleporters togehter to travel between them.=
+Owner=
+Save=
+Status=
+Target ID=
+Target area can not be loaded=
+Target coordinates invalid=
+Target teleporter is gone=
+Target teleporter obstructed=
+Target teleporter unknown=
+Teleport from one teleporter to another=
+Teleporter ID=
+Teleporter link mismatch=
+Teleporter ready=
+This teleporter ID is already in use=
+Unknown=

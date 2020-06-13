@@ -1,0 +1,27 @@
+# textdomain: teleportation
+
+
+### init.lua ###
+
+Can not edit, this is not your teleporter=Nicht befugt den Teleporter zu bearbeiten
+Configuration invalid=Einstellungen ungültig
+
+Each teleporter needs an ID. To establish a link between two teleporters A and B set the target ID of teleporter A to the ID of teleporter B and vice versa.=Jeder Teleporter braucht eine ID. Um eine Verknüpfung zwischen zwei Teleportern A und B herzustellen muss die Ziel ID von Teleporter A auf die ID von Teleporter B gestellt werden und umgekehrt.
+
+ID or target must not be empty=ID bzw. Ziel ID darf nicht leer sein
+Link two teleporters togehter to travel between them.=Verknüpfe zwei Teleporter um zwischen ihen zu Reisen
+Owner=Besitzer
+Save=Speichern
+Status=Status
+Target ID=Ziel ID
+Target area can not be loaded=Zielbereich kann nicht geladen werden
+Target coordinates invalid=Zielkoordiaten ungültig
+Target teleporter is gone=Teleporter existiert nicht mehr
+Target teleporter obstructed=Teleporter ist verbaut
+Target teleporter unknown=Teleporter unbekannt
+Teleport from one teleporter to another=Teleportiere von einem Teleporter zu einem anderen
+Teleporter ID=Teleporter ID
+Teleporter link mismatch=Teleporter Verknüpfungsfehler
+Teleporter ready=Teleporter bereit
+This teleporter ID is already in use=Teleporter ID bereits in Verwendung
+Unknown=Unbekannt

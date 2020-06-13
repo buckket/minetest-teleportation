@@ -1,0 +1,6 @@
+# Sets delay between teleporter activations, in seconds.
+teleportation_cooldown_time (Delay in seconds between teleporter activations) int 5
+
+# Enable sound effects for teleporters
+teleportation_sound_enable (Enable sound effects for teleporters) bool true
+
