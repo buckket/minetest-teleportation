@@ -2,7 +2,7 @@ teleportation = {}
 teleportation.version = {}
 teleportation.version.major = 1
 teleportation.version.minor = 0
-teleportation.version.patch = 0
+teleportation.version.patch = 1
 teleportation.version.string = teleportation.version.major .. "." ..
     teleportation.version.minor .. "." ..
     teleportation.version.patch
@@ -24,22 +24,20 @@ local mineclone_path = core.get_modpath("mcl_core") and mcl_core
 -- Define game specific items
 local moditems = {}
 if mineclone_path then
-  moditems.sounds_stone = mcl_sounds.node_sound_stone_defaults
-  moditems.iron_item = "mcl_core:iron_ingot"
-  moditems.gold_item = "mcl_core:gold_ingot"
-  moditems.power_item = "default:mese_crystal"
+    moditems.sounds_stone = mcl_sounds.node_sound_stone_defaults
+    moditems.iron_item = "mcl_core:iron_ingot"
+    moditems.gold_item = "mcl_core:gold_ingot"
+    moditems.power_item = "mesecons:redstone"
 else
-  moditems.sounds_stone = default.node_sound_stone_defaults
-  moditems.iron_item = "default:steel_ingot"
-  moditems.gold_item = "default:gold_ingot"
-  moditems.power_item = "mesecons:redstone"
+    moditems.sounds_stone = default.node_sound_stone_defaults
+    moditems.iron_item = "default:steel_ingot"
+    moditems.gold_item = "default:gold_ingot"
+    moditems.power_item = "default:mese_crystal"
 end
 moditems._tt_help = S("Teleport from one teleporter to another")
 moditems._doc_items_longdesc = S("Link two teleporters togehter to travel between them.")
 moditems._doc_items_usagehelp = S("Each teleporter needs an ID. To establish a link between two teleporters A and B set the target ID of teleporter A to the ID of teleporter B and vice versa.")
 moditems._doc_items_hidden = false
-
-
 
 -- Check if a str starts with start
 local function starts_with(str, start)
@@ -59,26 +57,26 @@ end
 
 -- Replace node at pos with node of type name
 local function swap_node(pos, node, name)
-	if node.name == name then
-		return
-	end
-	node.name = name
-	minetest.swap_node(pos, node)
+    if node.name == name then
+        return
+    end
+    node.name = name
+    minetest.swap_node(pos, node)
 end
 
 -- Check if the node at pos is not a block which obstructs teleportation
 function teleportation.check_obstructed(pos)
-	local def = minetest.registered_nodes[minetest.get_node(pos).name]
-	-- Allow ladders, signs, wallmounted things and torches to not obstruct
-	-- TODO: What about water?
-	if def and
-	            (def.drawtype == "airlike" or
-	            def.drawtype == "signlike" or
-	            def.drawtype == "torchlike" or
+    local def = minetest.registered_nodes[minetest.get_node(pos).name]
+    -- Allow ladders, signs, wallmounted things and torches to not obstruct
+    -- TODO: What about water?
+    if def and
+                (def.drawtype == "airlike" or
+                def.drawtype == "signlike" or
+                def.drawtype == "torchlike" or
                 (def.drawtype == "nodebox" and def.paramtype2 == "wallmounted")) then
-	    return false
-	end
-	return true
+        return false
+    end
+    return true
 end
 
 -- Check if teleporter is ready and configuration is valid
@@ -152,53 +150,53 @@ end
 
 -- on_timer callback for teleporter node
 function teleportation.on_timer(pos)
-	local node = minetest.get_node(pos)
-	local meta = minetest.env:get_meta(pos)
+    local node = minetest.get_node(pos)
+    local meta = minetest.env:get_meta(pos)
 
-	-- Check if we are on cooldown
-	local cooldown = meta:get_int("cooldown")
-	if cooldown > 0 then
-	    cooldown = cooldown - 1
-	    meta:set_int("cooldown", cooldown)
-	    return true
-	elseif cooldown == 0 and node.name == "teleportation:teleporter_cooldown" then
-	    swap_node(pos, node, "teleportation:teleporter_ok")
-	    if teleportation.sound_enable then
-	        minetest.sound_play("teleportation_ready", {pos = pos, gain = 1.0, max_hear_distance = 10,})
-	    end
-	    return true
-	end
+    -- Check if we are on cooldown
+    local cooldown = meta:get_int("cooldown")
+    if cooldown > 0 then
+        cooldown = cooldown - 1
+        meta:set_int("cooldown", cooldown)
+        return true
+    elseif cooldown == 0 and node.name == "teleportation:teleporter_cooldown" then
+        swap_node(pos, node, "teleportation:teleporter_ok")
+        if teleportation.sound_enable then
+            minetest.sound_play("teleportation_ready", {pos = pos, gain = 1.0, max_hear_distance = 10,})
+        end
+        return true
+    end
 
-	-- Find first player near the teleporter
-	local player
-	local objs = minetest.get_objects_inside_radius(pos, 1)
-	for _, obj in pairs(objs) do
-	    if obj:is_player() and is_on_top(pos, obj:get_pos()) then
-	        player = obj
-	        break
-		end
-	end
+    -- Find first player near the teleporter
+    local player
+    local objs = minetest.get_objects_inside_radius(pos, 1)
+    for _, obj in pairs(objs) do
+        if obj:is_player() and is_on_top(pos, obj:get_pos()) then
+            player = obj
+            break
+        end
+    end
 
-	-- No player near teleporter, save CPU cycles
-	if player == nil then
-	    return true
-	end
+    -- No player near teleporter, save CPU cycles
+    if player == nil then
+        return true
+    end
 
-	-- TODO: Check if we have fuel
+    -- TODO: Check if we have fuel
 
-	-- Check if the link to the target is valid and update node as well as formspec
-	local valid_link, target_pos, target_meta = teleportation.check_link(pos, meta)
-	if not valid_link then
-	    if node.name ~= "teleportation:teleporter_error" and teleportation.sound_enable then
-	        minetest.sound_play("teleportation_error", {pos = pos, gain = 1.0, max_hear_distance = 10,})
-	    end
-	    swap_node(pos, node, "teleportation:teleporter_error")
-	    meta:set_string("formspec", teleportation.get_formspec({
-	        owner = meta:get_string("owner"),
-	        err = meta:get_string("err")
-	    }))
-	    return true
-	else
+    -- Check if the link to the target is valid and update node as well as formspec
+    local valid_link, target_pos, target_meta = teleportation.check_link(pos, meta)
+    if not valid_link then
+        if node.name ~= "teleportation:teleporter_error" and teleportation.sound_enable then
+            minetest.sound_play("teleportation_error", {pos = pos, gain = 1.0, max_hear_distance = 10,})
+        end
+        swap_node(pos, node, "teleportation:teleporter_error")
+        meta:set_string("formspec", teleportation.get_formspec({
+            owner = meta:get_string("owner"),
+            err = meta:get_string("err")
+        }))
+        return true
+    else
         swap_node(pos, node, "teleportation:teleporter_ok")
         meta:set_string("err", "")
         meta:set_string("formspec", teleportation.get_formspec({
@@ -208,28 +206,28 @@ function teleportation.on_timer(pos)
     end
 
     -- Calculate teleportation position
-	local teleport_vector = vector.subtract(target_pos, pos)
-	local teleport_pos = vector.add(player:get_pos(), teleport_vector)
+    local teleport_vector = vector.subtract(target_pos, pos)
+    local teleport_pos = vector.add(player:get_pos(), teleport_vector)
 
-	-- Set teleporter on cooldown
-	meta:set_int("cooldown", teleportation.cooldown_time)
-	target_meta:set_int("cooldown", teleportation.cooldown_time)
-	swap_node(pos, node, "teleportation:teleporter_cooldown")
-	swap_node(target_pos, minetest.get_node(target_pos), "teleportation:teleporter_cooldown")
+    -- Set teleporter on cooldown
+    meta:set_int("cooldown", teleportation.cooldown_time)
+    target_meta:set_int("cooldown", teleportation.cooldown_time)
+    swap_node(pos, node, "teleportation:teleporter_cooldown")
+    swap_node(target_pos, minetest.get_node(target_pos), "teleportation:teleporter_cooldown")
 
 
-	-- Teleport player
-	if teleportation.sound_enable then
-	    minetest.sound_play("teleportation_teleport", {pos = pos, gain = 1.0, max_hear_distance = 10,})
-	    player:move_to(teleport_pos, false)
-	    minetest.sound_play("teleportation_teleport", {pos = target_pos, gain = 1.0, max_hear_distance = 10,})
-	else
-	    player:move_to(teleport_pos, false)
-	end
+    -- Teleport player
+    if teleportation.sound_enable then
+        minetest.sound_play("teleportation_teleport", {pos = pos, gain = 1.0, max_hear_distance = 10,})
+        player:move_to(teleport_pos, false)
+        minetest.sound_play("teleportation_teleport", {pos = target_pos, gain = 1.0, max_hear_distance = 10,})
+    else
+        player:move_to(teleport_pos, false)
+    end
 
-	minetest.log("action", "[teleportation] " .. player:get_player_name() .. " teleported to " .. minetest.pos_to_string(teleport_pos))
+    minetest.log("action", "[teleportation] " .. player:get_player_name() .. " teleported to " .. minetest.pos_to_string(teleport_pos))
 
-	return true
+    return true
 end
 
 -- Remove teleporter from global list
@@ -240,12 +238,12 @@ end
 
 -- Setup teleporter, start node timer
 function teleportation.after_place_node(pos, placer)
-	local meta = minetest.env:get_meta(pos)
-	local name = placer:get_player_name()
-	meta:set_string("owner", name)
-	meta:set_string("err", S("Unknown"))
-	meta:set_string("formspec", teleportation.get_formspec({owner = name, err = "Unknown"}))
-	minetest.get_node_timer(pos):start(1.0)
+    local meta = minetest.env:get_meta(pos)
+    local name = placer:get_player_name()
+    meta:set_string("owner", name)
+    meta:set_string("err", S("Unknown"))
+    meta:set_string("formspec", teleportation.get_formspec({owner = name, err = "Unknown"}))
+    minetest.get_node_timer(pos):start(1.0)
 end
 
 -- Generate teleporter formspec from data
@@ -254,15 +252,21 @@ function teleportation.get_formspec(data)
         data.err = S("Teleporter ready")
     end
 
-    return "formspec_version[3]" ..
-        "size[11,7]" ..
+    return "" ..
+        "size[12,12]" ..
         "field[1,1;4,1;id;" .. S("Teleporter ID") .. ";${id}]" ..
         "field[1,3;4,1;target;" .. S("Target ID") .. ";${target}]" ..
         "button[1,5;9,1;save;" .. S("Save") .. "]" ..
         "label[6,1;" .. S("Owner") .. ":]" ..
         "label[6,1.5;" .. minetest.formspec_escape(data.owner) .. "]" ..
         "label[6,3;" .. S("Status") .. ":]" ..
-        "label[6,3.5;" .. minetest.formspec_escape(data.err) .. "]"
+        "label[6,3.5;" .. minetest.formspec_escape(data.err) .. "]" ..
+		"list[current_player;main;0,4.5;9,3;9]"..
+		mcl_formspec.get_itemslot_bg(0,4.5,9,3)..
+		"list[current_player;main;0,7.74;9,1;]"..
+		mcl_formspec.get_itemslot_bg(0,7.74,9,1)
+
+
 end
 
 -- Update teleporter configuration via from event
@@ -306,12 +310,12 @@ function teleportation.on_receive_fields(pos, formname, fields, player)
         -- Run teleporter test routine and update formspec
         local node = minetest.get_node(pos)
         if not teleportation.check_link(pos, meta) then
-	        swap_node(pos, node, "teleportation:teleporter_error")
-	        meta:set_string("formspec", teleportation.get_formspec({
-	            owner = meta:get_string("owner"),
-	            err = meta:get_string("err")
-	        }))
-	    else
+            swap_node(pos, node, "teleportation:teleporter_error")
+            meta:set_string("formspec", teleportation.get_formspec({
+                owner = meta:get_string("owner"),
+                err = meta:get_string("err")
+            }))
+        else
             swap_node(pos, node, "teleportation:teleporter_ok")
             meta:set_string("err", "")
             meta:set_string("formspec", teleportation.get_formspec({
@@ -328,6 +332,8 @@ minetest.register_node("teleportation:teleporter_ok", {
     _doc_items_longdesc = moditems._doc_items_longdesc,
     _doc_items_usagehelp = moditems._doc_items_usagehelp,
     _doc_items_hidden = moditems._doc_items_hidden,
+    _doc_items_create_entry = false,
+    drop = "teleportation:teleporter_error",
     is_ground_content = false,
     on_timer = teleportation.on_timer,
     on_destruct = teleportation.on_destruct,
@@ -353,6 +359,8 @@ minetest.register_node("teleportation:teleporter_cooldown", {
     _doc_items_longdesc = moditems._doc_items_longdesc,
     _doc_items_usagehelp = moditems._doc_items_usagehelp,
     _doc_items_hidden = moditems._doc_items_hidden,
+    _doc_items_create_entry = false,
+    drop = "teleportation:teleporter_error",
     is_ground_content = false,
     on_timer = teleportation.on_timer,
     on_destruct = teleportation.on_destruct,
@@ -378,6 +386,8 @@ minetest.register_node("teleportation:teleporter_error", {
     _doc_items_longdesc = moditems._doc_items_longdesc,
     _doc_items_usagehelp = moditems._doc_items_usagehelp,
     _doc_items_hidden = moditems._doc_items_hidden,
+    _doc_items_create_entry = true,
+    drop = "teleportation:teleporter_error",
     is_ground_content = false,
     on_timer = teleportation.on_timer,
     on_destruct = teleportation.on_destruct,
